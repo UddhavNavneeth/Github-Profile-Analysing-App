@@ -1,0 +1,71 @@
+<html>
+<title>GHPA</title>
+<head>
+	<link rel="stylesheet" type="text/css" href="in.css">
+</head>
+<body>
+  <div id="w">
+    <h1>&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp<img src="octocat.png" style="height:40px;width: 40px;">
+    GitHub Profile Analyser</h1>
+    <input type="text" name="na" id="na" placeholder="Search username here...">
+    <a href="#" id="gk">Submit</a>
+    <div id="g" class="clearfix"></div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js" type="text/javascript"></script>
+  <script src="/dist/main.js" type="text/javascript"></script>
+  <script src="http://localhost:35729/livereload.js" type="text/javascript"></script>
+</body>
+</html>
+<script>
+	$(function(){
+    $('#gk').on('click', function(e){
+    e.preventDefault();
+    var usn=$('#na').val();
+    var rq='https://api.github.com/users/'+usn;
+    var rpi='https://api.github.com/users/'+usn+'/repos';
+    requestJSON(rq, function(json) {
+      if(json.message == "Not Found" || usn == '') {
+        $('#g').html("<h2>No matches!</h2>");
+      }
+      else {
+        var fun=json.name;
+        var usn=json.login;
+        var aviurl=json.avatar_url;
+        var prf=json.html_url;
+        var foen=json.followers;
+        var foin=json.following;
+        var reposnum=json.public_repos;
+        if(fun==undefined) { fun=usn; }
+        var oh='<h2>'+fun+' <span class="smallname"><br><a href="'+prf+'" target="_blank">'+usn+'</a></span></h2>';
+        oh+='<div class="ghcontent"><div class="avi"><a href="'+prf+'" target="_blank"><img src="'+aviurl+'" width="80" height="80" alt="'+usn+'"></a></div>';
+        oh+='<br><p>&nbspFollowers: '+foen+'<br>&nbspFollowing: '+foin+'<br>&nbspRepositories: '+reposnum+'</p></div>';
+        oh+='<div class="repolist clearfix">';
+        var rep;
+        $.getJSON(rpi, function(json){
+          rep= json;   
+          oP();                
+        });          
+        function oP() {
+          if(rep.length==0) { oh+='<p>No repositories!</p></div>'; }
+          else {
+            oh+='<p><strong>Repository List:</strong></p><ul>';
+            $.each(rep, function(index) {
+              oh+='<li><a href="'+rep[index].html_url+'" target="_blank">'+rep[index].name + '</a></li>';
+            });
+            oh+='</ul></div>'; 
+          }
+          $('#g').html(oh);
+        }
+      }
+    });
+  }); 
+  function requestJSON(url, callback) {
+    $.ajax({
+      url: url,
+      complete: function(xhr) {
+        callback.call(null, xhr.responseJSON);
+      }
+    });
+  }
+});
+</script>
